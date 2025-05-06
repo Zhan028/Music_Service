@@ -1,4 +1,4 @@
-module github.com/facelessEmptiness/user_service
+module github.com/Zhan028/Music_Service
 
 go 1.23.0
 

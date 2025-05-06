@@ -2,95 +2,91 @@ package main
 
 import (
 	"context"
+	"github.com/Zhan028/Music_Service/internal/repository/mongodb"
+	"github.com/Zhan028/Music_Service/internal/usecase"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	grpcHandler "github.com/facelessEmptiness/user_service/internal/delivery/grpc"
-	"github.com/facelessEmptiness/user_service/internal/repository"
-	"github.com/facelessEmptiness/user_service/internal/usecase"
-	pb "github.com/facelessEmptiness/user_service/proto"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	grpc2 "github.com/Zhan028/Music_Service/internal/delivery/grpc"
+	"github.com/joho/godotenv"
+
+	pb "github.com/Zhan028/Music_Service/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
-	// Загрузка конфигурации из переменных окружения
-	mongoURI := os.Getenv("MONGO_URI")
-	dbName := os.Getenv("DB_NAME")
-	grpcPort := os.Getenv("GRPC_PORT")
-	jwtSecret := os.Getenv("JWT_SECRET")
-	tokenExpStr := os.Getenv("TOKEN_EXP")
-
-	// Парсинг длительности токена
-	tokenExp, err := time.ParseDuration(tokenExpStr)
-	if err != nil {
-		log.Fatalf("Неверная длительность токена: %v", err)
+	// Загружаем переменные окружения из .env файла
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: .env file not found or cannot be loaded: %v", err)
 	}
 
-	// Подключение к MongoDB
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Получаем конфигурацию из переменных окружения
+	mongoURI := getEnv("MONGO_URI", "mongodb://localhost:27017")
+	mongoUser := getEnv("MONGO_USER", "")
+	mongoPass := getEnv("MONGO_PASS", "")
+	mongoDBName := getEnv("MONGO_DB", "playlist_service")
+	grpcPort := getEnv("GRPC_PORT", "50051")
+
+	// Создаем контекст с возможностью отмены
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	// Подключаемся к MongoDB
+	log.Println("Connecting to MongoDB...")
+	db, err := mongodb.NewClient(ctx, mongoURI, mongoUser, mongoPass, mongoDBName)
 	if err != nil {
-		log.Fatalf("Ошибка подключения к MongoDB: %v", err)
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
-	defer func() {
-		if err = client.Disconnect(context.TODO()); err != nil {
-			log.Printf("Не удалось отключиться от MongoDB: %v", err)
+	log.Println("Connected to MongoDB successfully")
+
+	// Создаем репозиторий
+	playlistRepo := mongodb.NewPlaylistRepository(db)
+
+	// Создаем use case
+	playlistUseCase := usecase.NewPlaylistUseCase(playlistRepo)
+
+	// Создаем gRPC сервер
+	server := grpc2.NewPlaylistServer(playlistUseCase)
+
+	// Настраиваем gRPC сервер
+	grpcServer := grpc.NewServer()
+	pb.RegisterPlaylistServiceServer(grpcServer, server)
+
+	// Включаем reflection для удобства отладки (можно использовать grpcurl)
+	reflection.Register(grpcServer)
+
+	// Запускаем gRPC сервер
+	lis, err := net.Listen("tcp", ":"+grpcPort)
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
+
+	log.Printf("Starting gRPC server on port %s...", grpcPort)
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("Failed to serve: %v", err)
 		}
 	}()
 
-	// Пинг базы данных для проверки подключения
-	if err = client.Ping(ctx, nil); err != nil {
-		log.Fatalf("Не удалось отправить пинг к MongoDB: %v", err)
+	// Обработка сигналов для корректного завершения работы
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Shutting down server...")
+	grpcServer.GracefulStop()
+	log.Println("Server stopped")
+}
+
+// getEnv получает значение переменной окружения или возвращает значение по умолчанию
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
 	}
-	log.Println("Успешно подключено к MongoDB")
-
-	// Инициализация базы данных
-	db := client.Database(dbName)
-
-	// Инициализация репозитория
-	repo := repository.NewMongoUserRepository(db)
-
-	// Инициализация use case
-	uc := usecase.NewUserUseCase(repo)
-
-	// Инициализация gRPC обработчика (добавлен параметр JWT, если ваш обработчик поддерживает это)
-	// Если ваш обработчик не принимает эти параметры, измените эту строку соответственно
-	handler := grpcHandler.NewUserServiceHandler(uc, jwtSecret, tokenExp)
-
-	// Создание gRPC сервера
-	grpcServer := grpc.NewServer()
-	pb.RegisterUserServiceServer(grpcServer, handler)
-
-	// Включение reflection для инструментов типа grpcurl
-	reflection.Register(grpcServer)
-
-	// Запуск gRPC сервера
-	lis, err := net.Listen("tcp", ":"+grpcPort)
-	if err != nil {
-		log.Fatalf("Не удалось запустить прослушивание: %v", err)
-	}
-	log.Printf("Запуск gRPC сервера на порту %s", grpcPort)
-
-	// Обработка корректного завершения
-	go func() {
-		signals := make(chan os.Signal, 1)
-		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-		<-signals
-		log.Println("Выключение gRPC сервера...")
-		grpcServer.GracefulStop()
-	}()
-
-	// Начало обслуживания
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("Не удалось обслужить: %v", err)
-	}
+	return value
 }

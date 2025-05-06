@@ -1,4 +1,4 @@
-package grpc
+package handler
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func NewUserServiceHandler(userUseCase *usecase.UserUseCase, jwtSecret string, t
 	}
 }
 
-// RegisterUser обрабатывает регистрацию пользователя
+// RegisterUser handles user registration
 func (h *UserServiceHandler) RegisterUser(ctx context.Context, req *pb.UserRequest) (*pb.UserResponse, error) {
 	user := &domain.User{
 		Name:     req.Name,
@@ -38,25 +38,25 @@ func (h *UserServiceHandler) RegisterUser(ctx context.Context, req *pb.UserReque
 	id, err := h.userUseCase.Register(user)
 	if err != nil {
 		if err == usecase.ErrEmailAlreadyExists {
-			return nil, status.Errorf(codes.AlreadyExists, "пользователь с этим email уже существует")
+			return nil, status.Errorf(codes.AlreadyExists, "user with this email already exists")
 		}
-		return nil, status.Errorf(codes.Internal, "не удалось создать пользователя: %v", err)
+		return nil, status.Errorf(codes.Internal, "failed to create user: %v", err)
 	}
 
 	return &pb.UserResponse{
 		Id:      id,
-		Message: "пользователь успешно зарегистрирован",
+		Message: "user registered successfully",
 	}, nil
 }
 
-// AuthenticateUser обрабатывает аутентификацию пользователя и генерирует JWT токен
+// AuthenticateUser handles user authentication and generates JWT token
 func (h *UserServiceHandler) AuthenticateUser(ctx context.Context, req *pb.AuthRequest) (*pb.AuthResponse, error) {
 	user, err := h.userUseCase.Login(req.Email, req.Password)
 	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "неверные учетные данные")
+		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials")
 	}
 
-	// Генерация JWT токена
+	// Generate JWT token
 	expiresAt := time.Now().Add(h.tokenExp)
 	claims := jwt.MapClaims{
 		"user_id": user.ID,
@@ -67,24 +67,144 @@ func (h *UserServiceHandler) AuthenticateUser(ctx context.Context, req *pb.AuthR
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(h.jwtSecret)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "не удалось сгенерировать токен")
+		return nil, status.Errorf(codes.Internal, "failed to generate token")
 	}
 
 	return &pb.AuthResponse{
-		Token: tokenString,
+		Token:     tokenString,
+		UserId:    user.ID,
+		ExpiresAt: expiresAt.Unix(),
 	}, nil
 }
 
-// GetUserProfile получает профиль пользователя по ID
+// GetUserProfile retrieves user profile by ID
 func (h *UserServiceHandler) GetUserProfile(ctx context.Context, req *pb.UserID) (*pb.UserProfile, error) {
 	user, err := h.userUseCase.GetByID(req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "пользователь не найден")
+		if err == usecase.ErrUserNotFound {
+			return nil, status.Errorf(codes.NotFound, "user not found")
+		}
+		return nil, status.Errorf(codes.Internal, "failed to get user: %v", err)
+	}
+
+	return convertUserToProfile(user), nil
+}
+
+// GetUserByEmail retrieves user profile by email
+func (h *UserServiceHandler) GetUserByEmail(ctx context.Context, req *pb.EmailRequest) (*pb.UserProfile, error) {
+	user, err := h.userUseCase.GetByEmail(req.Email)
+	if err != nil {
+		if err == usecase.ErrUserNotFound {
+			return nil, status.Errorf(codes.NotFound, "user not found")
+		}
+		return nil, status.Errorf(codes.Internal, "failed to get user: %v", err)
+	}
+
+	return convertUserToProfile(user), nil
+}
+
+// UpdateUserProfile updates user information
+func (h *UserServiceHandler) UpdateUserProfile(ctx context.Context, req *pb.UpdateRequest) (*pb.UserResponse, error) {
+	// First get existing user to preserve password
+	existingUser, err := h.userUseCase.GetByID(req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "user not found")
+	}
+
+	// Update fields
+	user := &domain.User{
+		ID:       req.Id,
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: existingUser.Password, // Preserve password
+	}
+
+	if err := h.userUseCase.Update(user); err != nil {
+		if err == usecase.ErrEmailAlreadyExists {
+			return nil, status.Errorf(codes.AlreadyExists, "email already in use")
+		}
+		return nil, status.Errorf(codes.Internal, "failed to update user: %v", err)
+	}
+
+	return &pb.UserResponse{
+		Id:      req.Id,
+		Message: "user updated successfully",
+	}, nil
+}
+
+// ChangePassword handles password changes
+func (h *UserServiceHandler) ChangePassword(ctx context.Context, req *pb.PasswordChangeRequest) (*pb.StatusResponse, error) {
+	err := h.userUseCase.ChangePassword(req.Id, req.CurrentPassword, req.NewPassword)
+	if err != nil {
+		switch err {
+		case usecase.ErrUserNotFound:
+			return nil, status.Errorf(codes.NotFound, "user not found")
+		case usecase.ErrInvalidCredentials:
+			return nil, status.Errorf(codes.PermissionDenied, "current password is incorrect")
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to change password: %v", err)
+		}
+	}
+
+	return &pb.StatusResponse{
+		Success: true,
+		Message: "password changed successfully",
+	}, nil
+}
+
+// DeleteUser handles user deletion
+func (h *UserServiceHandler) DeleteUser(ctx context.Context, req *pb.UserID) (*pb.StatusResponse, error) {
+	err := h.userUseCase.Delete(req.Id)
+	if err != nil {
+		if err == usecase.ErrUserNotFound {
+			return nil, status.Errorf(codes.NotFound, "user not found")
+		}
+		return nil, status.Errorf(codes.Internal, "failed to delete user: %v", err)
+	}
+
+	return &pb.StatusResponse{
+		Success: true,
+		Message: "user deleted successfully",
+	}, nil
+}
+
+// ListUsers retrieves a paginated list of users
+func (h *UserServiceHandler) ListUsers(ctx context.Context, req *pb.ListRequest) (*pb.UserList, error) {
+	users, err := h.userUseCase.List(req.Page, req.Limit)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to list users: %v", err)
+	}
+
+	userProfiles := make([]*pb.UserProfile, 0, len(users))
+	for _, user := range users {
+		userProfiles = append(userProfiles, convertUserToProfile(user))
+	}
+
+	return &pb.UserList{
+		Users:      userProfiles,
+		TotalCount: int64(len(userProfiles)),
+		Page:       req.Page,
+		Limit:      req.Limit,
+	}, nil
+}
+
+// Helper function to convert domain.User to pb.UserProfile
+func convertUserToProfile(user *domain.User) *pb.UserProfile {
+	var createdAt, updatedAt int64
+
+	// Handle time fields if they exist in your domain model
+	if user.CreatedAt != nil {
+		createdAt = user.CreatedAt.Unix()
+	}
+	if user.UpdatedAt != nil {
+		updatedAt = user.UpdatedAt.Unix()
 	}
 
 	return &pb.UserProfile{
-		Id:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
-	}, nil
+		Id:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}
 }

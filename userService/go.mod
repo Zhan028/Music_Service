@@ -1,4 +1,4 @@
-module github.com/Zhanbatyr06/Music_Service/userService
+module github.com/Zhan028/Music_Service/userService
 
 go 1.23.0
 

@@ -1,0 +1,10 @@
+go 1.24
+
+use (
+	playlistService
+	track-service
+
+	userService
+	.
+	api_gateway
+)

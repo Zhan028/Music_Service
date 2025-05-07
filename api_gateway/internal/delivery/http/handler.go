@@ -2,7 +2,7 @@ package http
 
 import (
 	"context"
-	"github.com/Zhanbatyr06/Music_Service/api_gateway/internal/grpc"
+	"github.com/Zhan028/Music_Service/api_gateway/internal/grpc"
 	"net/http"
 
 	playlistpb "github.com/Zhan028/Music_Service/playlistService/proto"

@@ -1,4 +1,6 @@
-module github.com/Zhan028/Music_Service
+module github.com/Zhan028/Music_Service/playlistService
+
+
 
 go 1.23.0
 

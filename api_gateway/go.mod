@@ -1,6 +1,6 @@
 module github.com/Zhan028/Music_Service/api_gateway
 
-go 1.24
+go 1.23.0
 
 require (
 	github.com/bytedance/sonic v1.13.2 // indirect

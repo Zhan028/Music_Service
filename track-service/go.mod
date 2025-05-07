@@ -1,4 +1,4 @@
-module github.com/Zhanbatyr06/ADP2_ASS1/track-service
+module github.com/Zhan028/Music_Service/track-service
 
 go 1.23.4
 

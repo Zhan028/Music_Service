@@ -1,0 +1,30 @@
+[33m819f662[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/kafka-integration[m[33m, [m[1;31morigin/feature/kafka-integration[m[33m)[m HEAD@{0}: pull origin feature/kafka-integration: Fast-forward
+[33maf7bcbf[m HEAD@{1}: pull origin feature/kafka-integration: Fast-forward
+[33mde00986[m HEAD@{2}: checkout: moving from feature/kafka-integration to feature/kafka-integration
+[33mde00986[m HEAD@{3}: commit: Добавила интеграцию Kafka в track-service и playlistService
+[33m0debfbf[m[33m ([m[1;32mmain[m[33m)[m HEAD@{4}: checkout: moving from main to feature/kafka-integration
+[33m0debfbf[m[33m ([m[1;32mmain[m[33m)[m HEAD@{5}: commit: api_gateway
+[33m9ad8700[m HEAD@{6}: commit: pb files
+[33m28ad1b8[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{7}: pull origin main: Fast-forward
+[33ma679516[m HEAD@{8}: checkout: moving from userservice to main
+[33mcdab151[m[33m ([m[1;31morigin/userservice[m[33m, [m[1;32muserservice[m[33m)[m HEAD@{9}: checkout: moving from userservice to userservice
+[33mcdab151[m[33m ([m[1;31morigin/userservice[m[33m, [m[1;32muserservice[m[33m)[m HEAD@{10}: branch: Reset to origin/userservice
+[33mcdab151[m[33m ([m[1;31morigin/userservice[m[33m, [m[1;32muserservice[m[33m)[m HEAD@{11}: checkout: moving from track to userservice
+[33me0d3ad8[m[33m ([m[1;32mtrack[m[33m)[m HEAD@{12}: rebase (finish): returning to refs/heads/track
+[33me0d3ad8[m[33m ([m[1;32mtrack[m[33m)[m HEAD@{13}: rebase (pick): playlist service
+[33mce02add[m HEAD@{14}: rebase (pick): handler
+[33m579d66f[m HEAD@{15}: rebase (pick): service
+[33m5a55d91[m[33m ([m[1;31morigin/track[m[33m)[m HEAD@{16}: rebase (start): checkout origin/track
+[33ma2106fd[m[33m ([m[1;31morigin/playlistService[m[33m, [m[1;32mplaylistService[m[33m)[m HEAD@{17}: checkout: moving from playlistService to track
+[33ma2106fd[m[33m ([m[1;31morigin/playlistService[m[33m, [m[1;32mplaylistService[m[33m)[m HEAD@{18}: checkout: moving from userservice to playlistService
+[33mcdab151[m[33m ([m[1;31morigin/userservice[m[33m, [m[1;32muserservice[m[33m)[m HEAD@{19}: checkout: moving from playlistService to userservice
+[33ma2106fd[m[33m ([m[1;31morigin/playlistService[m[33m, [m[1;32mplaylistService[m[33m)[m HEAD@{20}: checkout: moving from userservice to playlistService
+[33mcdab151[m[33m ([m[1;31morigin/userservice[m[33m, [m[1;32muserservice[m[33m)[m HEAD@{21}: reset: moving to HEAD
+[33mcdab151[m[33m ([m[1;31morigin/userservice[m[33m, [m[1;32muserservice[m[33m)[m HEAD@{22}: checkout: moving from playlistService to userservice
+[33ma2106fd[m[33m ([m[1;31morigin/playlistService[m[33m, [m[1;32mplaylistService[m[33m)[m HEAD@{23}: commit: playlist service
+[33mcdab151[m[33m ([m[1;31morigin/userservice[m[33m, [m[1;32muserservice[m[33m)[m HEAD@{24}: checkout: moving from userservice to playlistService
+[33mcdab151[m[33m ([m[1;31morigin/userservice[m[33m, [m[1;32muserservice[m[33m)[m HEAD@{25}: commit: handler
+[33m21bd4b9[m HEAD@{26}: commit: service
+[33ma679516[m HEAD@{27}: reset: moving to HEAD
+[33ma679516[m HEAD@{28}: checkout: moving from main to userservice
+[33ma679516[m HEAD@{29}: clone: from https://github.com/Zhan028/Music_Service.git

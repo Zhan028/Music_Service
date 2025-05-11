@@ -14,5 +14,5 @@ func main() {
 	r := gin.Default()
 	http.RegisterRoutes(r, handler)
 
-	r.Run(":8080") // API Gateway слушает на порту 8080
+	r.Run(":8081") // API Gateway слушает на порту 8080
 }

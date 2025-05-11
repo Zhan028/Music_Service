@@ -51,7 +51,7 @@ func main() {
 	// Создаем use case
 	playlistUseCase := usecase.NewPlaylistUseCase(playlistRepo)
 
-	kafkaconsumer.StartTrackConsumer(playlistUseCase)
+	kafkaconsumer.StartTrackConsumer(*playlistUseCase)
 
 	// Создаем gRPC сервер
 	server := grpc2.NewPlaylistServer(playlistUseCase)

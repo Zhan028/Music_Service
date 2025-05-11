@@ -39,12 +39,7 @@ func (r *mongoPlaylistRepository) Create(ctx context.Context, playlist *domain2.
 func (r *mongoPlaylistRepository) GetByID(ctx context.Context, id string) (*domain2.Playlist, error) {
 	var playlist domain2.Playlist
 
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&playlist)
+	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&playlist)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, errors.New("playlist not found")
@@ -104,21 +99,12 @@ func (r *mongoPlaylistRepository) Update(ctx context.Context, playlist *domain2.
 }
 
 func (r *mongoPlaylistRepository) AddTrack(ctx context.Context, playlistID string, track domain2.Track) (*domain2.Playlist, error) {
-	objID, err := primitive.ObjectIDFromHex(playlistID)
-	if err != nil {
-		return nil, err
-	}
-
-	if track.ID == "" {
-		track.ID = primitive.NewObjectID().Hex()
-	}
-
 	update := bson.M{
 		"$push": bson.M{"tracks": track},
 		"$set":  bson.M{"updated_at": time.Now()},
 	}
 
-	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": playlistID}, update)
 	if err != nil {
 		return nil, err
 	}

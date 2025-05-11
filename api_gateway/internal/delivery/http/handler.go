@@ -86,6 +86,26 @@ func (h *Handler) CreatePlaylist(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
+func (h *Handler) GetUserPlaylists(c *gin.Context) {
+	userID := c.Query("user_id")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id query param is required"})
+		return
+	}
+
+	req := &playlistpb.GetUserPlaylistsRequest{
+		UserId: userID,
+	}
+
+	resp, err := h.clients.PlaylistClient.GetUserPlaylists(context.Background(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
 // ======= TRACK HANDLER =======
 func (h *Handler) DeleteTrack(c *gin.Context) {
 	var input tracskpb.DeleteTrackRequest

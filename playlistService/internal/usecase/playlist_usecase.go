@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	domain2 "github.com/Zhan028/Music_Service/playlistService/internal/domain"
 	"github.com/segmentio/kafka-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 )
 
@@ -76,7 +78,7 @@ func (uc *PlaylistUseCase) AddTrackToPlaylist(ctx context.Context, playlistID st
 		}
 	}
 
-	return uc.repo.AddTrack(ctx, playlistID, track)
+	return uc.repo.AddTrack(ctx, playlist.ID, track)
 }
 
 func (uc *PlaylistUseCase) RemoveTrackFromPlaylist(ctx context.Context, playlistID, trackID string) (*domain2.Playlist, error) {
@@ -108,16 +110,15 @@ func (uc *PlaylistUseCase) AddToNewPlaylist(ctx context.Context, message kafka.M
 		log.Printf("unmarshal error: %v", err)
 		return err
 	}
-	const playlistName = "Новинки"
+	const playlistName = "Новинки-2"
 
-	playlist, err := uc.repo.GetByName(ctx, playlistName)
-	if err != nil {
-		return err
-	}
+	playlist, _ := uc.repo.GetByName(ctx, playlistName)
+	fmt.Println(playlist)
 
 	if playlist == nil {
 		// создаём плейлист с треком
 		newPlaylist := &domain2.Playlist{
+			ID:     primitive.NewObjectID().Hex(),
 			Name:   playlistName,
 			UserID: "system", // или "" если не нужен
 			Tracks: []*domain2.Track{&track},
@@ -127,7 +128,6 @@ func (uc *PlaylistUseCase) AddToNewPlaylist(ctx context.Context, message kafka.M
 		return err
 	}
 
-	// добавляем трек в существующий плейлист
-	_, err = uc.repo.AddTrack(ctx, playlist.ID, track)
+	_, err := uc.repo.AddTrack(ctx, playlist.ID, track)
 	return err
 }

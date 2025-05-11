@@ -2,9 +2,11 @@ package grpc
 
 import (
 	"context"
-	"github.com/Zhan028/Music_Service/internal/domain"
-	"github.com/Zhan028/Music_Service/internal/usecase"
-	"github.com/Zhan028/Music_Service/proto"
+	"github.com/Zhan028/Music_Service/playlistService/internal/domain"
+	"github.com/Zhan028/Music_Service/playlistService/internal/usecase"
+	"github.com/Zhan028/Music_Service/playlistService/proto"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,8 +23,33 @@ func NewPlaylistServer(useCase *usecase.PlaylistUseCase) *PlaylistServer {
 	}
 }
 
+func convertProtoTracksToDomainTracks(protoTracks []*proto.Track) []*domain.Track {
+	var domainTracks []*domain.Track
+
+	for _, track := range protoTracks {
+		domainTracks = append(domainTracks, &domain.Track{
+			ID:       primitive.NewObjectID().Hex(), // генерируем ID
+			Title:    track.Title,
+			Artist:   track.Artist,
+			Duration: track.Duration,
+			Album:    track.Album,
+		})
+	}
+	return domainTracks
+}
+
 func (s *PlaylistServer) CreatePlaylist(ctx context.Context, req *proto.CreatePlaylistRequest) (*proto.Playlist, error) {
-	playlist, err := s.useCase.CreatePlaylist(ctx, req.Name, req.UserId, req.Description)
+	// Логируем запрос, чтобы увидеть, что мы получаем
+	log.Printf("Received CreatePlaylist request: %+v\n", req)
+
+	// Конвертируем proto треки в доменные
+	domainTracks := convertProtoTracksToDomainTracks(req.Tracks)
+
+	// Логируем конвертированные треки
+	log.Printf("Converted domain tracks: %+v\n", domainTracks)
+
+	// Создаем плейлист с конвертированными треками
+	playlist, err := s.useCase.CreatePlaylist(ctx, req.Name, req.UserId, req.Description, domainTracks)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create playlist: %v", err)
 	}

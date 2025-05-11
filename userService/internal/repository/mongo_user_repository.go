@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"github.com/facelessEmptiness/user_service/internal/domain"
+	"github.com/Zhan028/Music_Service/userService/internal/domain"
 
 	"time"
 

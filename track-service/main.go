@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/Zhan028/Music_Service/track-service/services"
+	"github.com/Zhan028/Music_Service/track-service/telemetry"
 	"log"
 	"net"
 	"os"
@@ -13,10 +15,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 
-	pb "github.com/Zhanbatyr06/ADP2_ASS1/track-service/proto"
-	"github.com/Zhanbatyr06/ADP2_ASS1/track-service/repositories"
-	"github.com/Zhanbatyr06/ADP2_ASS1/track-service/services"
-	"github.com/Zhanbatyr06/ADP2_ASS1/track-service/telemetry"
+	pb "github.com/Zhan028/Music_Service/track-service/proto"
+	"github.com/Zhan028/Music_Service/track-service/repositories"
 )
 
 func main() {

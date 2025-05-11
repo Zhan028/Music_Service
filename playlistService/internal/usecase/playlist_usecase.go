@@ -2,8 +2,11 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	domain2 "github.com/Zhan028/Music_Service/playlistService/internal/domain"
+	"github.com/segmentio/kafka-go"
+	"log"
 )
 
 type PlaylistUseCase struct {
@@ -16,7 +19,7 @@ func NewPlaylistUseCase(repo domain2.PlaylistRepository) *PlaylistUseCase {
 	}
 }
 
-func (uc *PlaylistUseCase) CreatePlaylist(ctx context.Context, name, userID, description string) (*domain2.Playlist, error) {
+func (uc *PlaylistUseCase) CreatePlaylist(ctx context.Context, name, userID, description string, tracks []*domain2.Track) (*domain2.Playlist, error) {
 	if name == "" {
 		return nil, errors.New("playlist name cannot be empty")
 	}
@@ -29,7 +32,7 @@ func (uc *PlaylistUseCase) CreatePlaylist(ctx context.Context, name, userID, des
 		Name:        name,
 		UserID:      userID,
 		Description: description,
-		Tracks:      []domain2.Track{},
+		Tracks:      tracks,
 	}
 
 	return uc.repo.Create(ctx, playlist)
@@ -98,4 +101,33 @@ func (uc *PlaylistUseCase) DeletePlaylist(ctx context.Context, id, userID string
 	}
 
 	return uc.repo.Delete(ctx, id, userID)
+}
+func (uc *PlaylistUseCase) AddToNewPlaylist(ctx context.Context, message kafka.Message) error {
+	var track domain2.Track
+	if err := json.Unmarshal(message.Value, &track); err != nil {
+		log.Printf("unmarshal error: %v", err)
+		return err
+	}
+	const playlistName = "Новинки"
+
+	playlist, err := uc.repo.GetByName(ctx, playlistName)
+	if err != nil {
+		return err
+	}
+
+	if playlist == nil {
+		// создаём плейлист с треком
+		newPlaylist := &domain2.Playlist{
+			Name:   playlistName,
+			UserID: "system", // или "" если не нужен
+			Tracks: []*domain2.Track{&track},
+		}
+
+		_, err := uc.repo.Create(ctx, newPlaylist)
+		return err
+	}
+
+	// добавляем трек в существующий плейлист
+	_, err = uc.repo.AddTrack(ctx, playlist.ID, track)
+	return err
 }

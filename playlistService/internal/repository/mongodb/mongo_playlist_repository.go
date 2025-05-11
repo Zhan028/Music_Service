@@ -3,7 +3,7 @@ package mongodb
 import (
 	"context"
 	"errors"
-	domain2 "github.com/Zhan028/Music_Service/internal/domain"
+	domain2 "github.com/Zhan028/Music_Service/playlistService/internal/domain"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -163,4 +163,18 @@ func (r *mongoPlaylistRepository) Delete(ctx context.Context, id string, userID 
 	}
 
 	return nil
+}
+func (r *mongoPlaylistRepository) GetByName(ctx context.Context, name string) (*domain2.Playlist, error) {
+	filter := bson.M{"name": name}
+
+	var result domain2.Playlist
+	err := r.collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, nil // плейлист не найден — это не ошибка
+		}
+		return nil, err
+	}
+
+	return &result, nil
 }

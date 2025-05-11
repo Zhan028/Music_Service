@@ -24,4 +24,6 @@ type PlaylistRepository interface {
 
 	// Delete удаляет плейлист
 	Delete(ctx context.Context, id string, userID string) error
+
+	GetByName(ctx context.Context, name string) (*Playlist, error)
 }

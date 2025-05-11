@@ -21,7 +21,7 @@ type Playlist struct {
 	Name        string    `json:"name" bson:"name"`
 	UserID      string    `json:"user_id" bson:"user_id"`
 	Description string    `json:"description" bson:"description"`
-	Tracks      []Track   `json:"tracks" bson:"tracks"`
+	Tracks      []*Track  `json:"tracks" bson:"tracks"`
 	CreatedAt   time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at"`
 }

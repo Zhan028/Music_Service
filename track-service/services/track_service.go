@@ -2,10 +2,15 @@ package services
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/Zhan028/Music_Service/track-service/models"
+	"github.com/Zhan028/Music_Service/track-service/repositories"
+	"github.com/segmentio/kafka-go"
+	"log"
+	"time"
 
-	"github.com/Zhanbatyr06/ADP2_ASS1/track-service/models"
-	pb "github.com/Zhanbatyr06/ADP2_ASS1/track-service/proto"
-	"github.com/Zhanbatyr06/ADP2_ASS1/track-service/repositories"
+	pb "github.com/Zhan028/Music_Service/track-service/proto"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -19,6 +24,13 @@ func NewTrackGRPCService(repo *repositories.TrackRepo) *TrackGRPCService {
 	return &TrackGRPCService{repo: repo}
 }
 
+// Kafka writer (можно вынести в init или конструктор)
+var kafkaWriter = kafka.Writer{
+	Addr:     kafka.TCP("localhost:9092"),
+	Topic:    "track.created",
+	Balancer: &kafka.LeastBytes{},
+}
+
 func (s *TrackGRPCService) CreateTrack(ctx context.Context, req *pb.CreateTrackRequest) (*pb.CreateTrackResponse, error) {
 	track := models.Track{
 		ID:       primitive.NewObjectID(),
@@ -28,9 +40,24 @@ func (s *TrackGRPCService) CreateTrack(ctx context.Context, req *pb.CreateTrackR
 		Duration: req.GetDurationSec(),
 	}
 
-	// CreatedAt заполнится внутри репозитория
+	// CreatedAt внутри репозитория
 	if _, err := s.repo.CreateTrack(ctx, track); err != nil {
 		return nil, err
+	}
+
+	// Отправляем событие в Kafka
+	msg, err := json.Marshal(track)
+	if err != nil {
+		log.Printf("failed to marshal track: %v", err)
+	} else {
+		err = kafkaWriter.WriteMessages(ctx, kafka.Message{
+			Key:   []byte(track.ID.Hex()),
+			Value: msg,
+			Time:  time.Now(),
+		})
+		if err != nil {
+			log.Printf("failed to publish to kafka: %v", err)
+		}
 	}
 
 	return &pb.CreateTrackResponse{

@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"errors"
-	"github.com/facelessEmptiness/user_service/internal/domain"
-	"github.com/facelessEmptiness/user_service/internal/repository"
+	"github.com/Zhan028/Music_Service/userService/internal/domain"
+	"github.com/Zhan028/Music_Service/userService/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 

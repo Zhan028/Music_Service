@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/facelessEmptiness/user_service/internal/domain"
+	"github.com/Zhan028/Music_Service/userService/internal/domain"
 )
 
 type UserRepository interface {

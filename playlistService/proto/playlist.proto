@@ -41,6 +41,7 @@ message CreatePlaylistRequest {
   string name = 1;
   string user_id = 2;
   string description = 3;
+  repeated Track tracks = 4;
 }
 
 message GetPlaylistRequest {

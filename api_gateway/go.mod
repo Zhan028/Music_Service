@@ -1,15 +1,21 @@
-module github.com/Zhanbatyr06/Music_Service/api_gateway
+module github.com/Zhan028/Music_Service/api_gateway
 
-go 1.24
+go 1.23.0
+
+require (
+	github.com/Zhan028/Music_Service/playlistService v0.0.0-20250507092009-45745d230c51
+	github.com/Zhan028/Music_Service/track-service v0.0.0-20250507092009-45745d230c51
+	github.com/Zhan028/Music_Service/userService v0.0.0-20250507092009-45745d230c51
+	github.com/gin-gonic/gin v1.10.0
+	google.golang.org/grpc v1.72.0
+)
 
 require (
 	github.com/bytedance/sonic v1.13.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
-	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
-	github.com/gin-gonic/gin v1.10.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.26.0 // indirect
@@ -28,6 +34,13 @@ require (
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250414145226-207652e42e2e // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/Zhan028/Music_Service/userService => ../userService
+
+replace github.com/Zhan028/Music_Service/track-service => ../track-service
+
+replace github.com/Zhan028/Music_Service/playlistService => ../playlistService

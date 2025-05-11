@@ -14,9 +14,9 @@ type Clients struct {
 }
 
 func NewClients() *Clients {
-	userConn, _ := grpc.Dial("localhost:50051", grpc.WithInsecure())
-	playlistConn, _ := grpc.Dial("localhost:50052", grpc.WithInsecure())
-	trackConn, _ := grpc.Dial("localhost:50053", grpc.WithInsecure())
+	userConn, _ := grpc.Dial("localhost:50053", grpc.WithInsecure())
+	playlistConn, _ := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	trackConn, _ := grpc.Dial("localhost:50052", grpc.WithInsecure())
 	return &Clients{
 		UserClient:     userpb.NewUserServiceClient(userConn),
 		PlaylistClient: playlistpb.NewPlaylistServiceClient(playlistConn),

@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	grpcHandler "github.com/facelessEmptiness/user_service/userService/internal/delivery/grpc"
-	"github.com/facelessEmptiness/user_service/userService/internal/repository"
-	"github.com/facelessEmptiness/user_service/userService/internal/usecase"
-	pb "github.com/facelessEmptiness/user_service/userService/proto"
+	grpcHandler "github.com/Zhan028/Music_Service/userService/internal/delivery/grpc"
+	"github.com/Zhan028/Music_Service/userService/internal/repository"
+	"github.com/Zhan028/Music_Service/userService/internal/usecase"
+	pb "github.com/Zhan028/Music_Service/userService/proto"
 	"log"
 	"net"
 	"os"
@@ -21,11 +21,11 @@ import (
 
 func main() {
 	// Загрузка конфигурации из переменных окружения
-	mongoURI := os.Getenv("MONGO_URI")
-	dbName := os.Getenv("DB_NAME")
-	grpcPort := os.Getenv("GRPC_PORT")
-	jwtSecret := os.Getenv("JWT_SECRET")
-	tokenExpStr := os.Getenv("TOKEN_EXP")
+	mongoURI := "mongodb://localhost:27017"
+	dbName := "ap2"
+	grpcPort := "50053"
+	jwtSecret := "your-secret-key"
+	tokenExpStr := "24h"
 
 	// Парсинг длительности токена
 	tokenExp, err := time.ParseDuration(tokenExpStr)

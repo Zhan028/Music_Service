@@ -2,9 +2,11 @@ package handler
 
 import (
 	"context"
-	"github.com/facelessEmptiness/user_service/userService/internal/domain"
-	"github.com/facelessEmptiness/user_service/userService/internal/usecase"
-	"github.com/facelessEmptiness/user_service/userService/proto"
+	
+	"github.com/Zhan028/Music_Service/userService/internal/domain"
+	"github.com/Zhan028/Music_Service/userService/internal/usecase"
+	"github.com/Zhan028/Music_Service/userService/proto"
+
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"

@@ -100,3 +100,16 @@ func (h *Handler) DeleteTrack(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 
 }
+func (h *Handler) CreateTrack(c *gin.Context) {
+	var input tracskpb.CreateTrackRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.clients.TracksClient.CreateTrack(context.Background(), &input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, resp)
+}

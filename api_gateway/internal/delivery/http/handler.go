@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	playlistpb "github.com/Zhan028/Music_Service/playlistService/proto"
+	tracskpb "github.com/Zhan028/Music_Service/track-service/proto"
 	userpb "github.com/Zhan028/Music_Service/userService/proto"
 	"github.com/gin-gonic/gin"
 )
@@ -83,4 +84,19 @@ func (h *Handler) CreatePlaylist(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, resp)
+}
+
+// ======= TRACK HANDLER =======
+func (h *Handler) DeleteTrack(c *gin.Context) {
+	var input tracskpb.DeleteTrackRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.clients.TracksClient.DeleteTrack(context.Background(), &input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, resp)
+
 }

@@ -2,15 +2,12 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/Zhan028/Music_Service/track-service/models"
-	"github.com/Zhan028/Music_Service/track-service/repositories"
-	"github.com/segmentio/kafka-go"
-	"log"
-	"time"
-
 	pb "github.com/Zhan028/Music_Service/track-service/proto"
 
+	localKafka "github.com/Zhan028/Music_Service/track-service/kafka"
+	"github.com/Zhan028/Music_Service/track-service/repositories"
+	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -25,9 +22,8 @@ func NewTrackGRPCService(repo *repositories.TrackRepo) *TrackGRPCService {
 }
 
 // Kafka writer (можно вынести в init или конструктор)
-var kafkaWriter = kafka.Writer{
+var kafkaWriter = &kafka.Writer{
 	Addr:     kafka.TCP("localhost:9092"),
-	Topic:    "track.created",
 	Balancer: &kafka.LeastBytes{},
 }
 
@@ -46,19 +42,7 @@ func (s *TrackGRPCService) CreateTrack(ctx context.Context, req *pb.CreateTrackR
 	}
 
 	// Отправляем событие в Kafka
-	msg, err := json.Marshal(track)
-	if err != nil {
-		log.Printf("failed to marshal track: %v", err)
-	} else {
-		err = kafkaWriter.WriteMessages(ctx, kafka.Message{
-			Key:   []byte(track.ID.Hex()),
-			Value: msg,
-			Time:  time.Now(),
-		})
-		if err != nil {
-			log.Printf("failed to publish to kafka: %v", err)
-		}
-	}
+	localKafka.PublishMessage(ctx, kafkaWriter, "track.created", track.ID.Hex(), track)
 
 	return &pb.CreateTrackResponse{
 		Track: toProto(track),

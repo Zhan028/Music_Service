@@ -105,6 +105,7 @@ func (uc *PlaylistUseCase) DeletePlaylist(ctx context.Context, id, userID string
 	return uc.repo.Delete(ctx, id, userID)
 }
 func (uc *PlaylistUseCase) AddToNewPlaylist(ctx context.Context, message kafka.Message) error {
+
 	var track domain2.Track
 	if err := json.Unmarshal(message.Value, &track); err != nil {
 		log.Printf("unmarshal error: %v", err)

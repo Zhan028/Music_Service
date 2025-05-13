@@ -4,15 +4,24 @@ import (
 	"github.com/Zhan028/Music_Service/api_gateway/internal/delivery/http"
 	"github.com/Zhan028/Music_Service/api_gateway/internal/grpc"
 
+	"github.com/Zhan028/Music_Service/api_gateway/internal/logger"
+	"github.com/Zhan028/Music_Service/api_gateway/internal/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	logger.InitLogger()
+
 	clients := grpc.NewClients()
 	handler := http.NewHandler(clients)
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Recovery())
+	r.Use(middleware.GinLoggerMiddleware())
+
 	http.RegisterRoutes(r, handler)
 
-	r.Run(":8081") // API Gateway слушает на порту 8080
+	logger.InfoLogger.Println("API Gateway started on :8081")
+	r.Run(":8081")
 }

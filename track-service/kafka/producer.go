@@ -24,4 +24,5 @@ func PublishMessage(ctx context.Context, writer *kafka.Writer, topic string, key
 	if err != nil {
 		log.Printf("failed to publish to kafka topic %s: %v", topic, err)
 	}
+
 }

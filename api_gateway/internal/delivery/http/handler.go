@@ -19,8 +19,6 @@ func NewHandler(clients *grpc.Clients) *Handler {
 	return &Handler{clients: clients}
 }
 
-// ======= USER HANDLER =======
-
 func (h *Handler) RegisterUser(c *gin.Context) {
 	var req userpb.UserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -37,7 +35,7 @@ func (h *Handler) RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
-// ======= PLAYLIST HANDLER =======
+// PLAYLIST HANDLER
 
 type TrackInput struct {
 	Title    string `json:"title"`

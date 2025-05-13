@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
+	localKafka "github.com/Zhan028/Music_Service/track-service/kafka"
 	"github.com/Zhan028/Music_Service/track-service/models"
 	pb "github.com/Zhan028/Music_Service/track-service/proto"
 
-	localKafka "github.com/Zhan028/Music_Service/track-service/kafka"
 	"github.com/Zhan028/Music_Service/track-service/repositories"
 	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/bson"

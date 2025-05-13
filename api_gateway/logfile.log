@@ -1,0 +1,10 @@
+[INFO]  2025/05/13 17:15:12 main.go:25: API Gateway started on :8081
+[INFO]  2025/05/13 17:15:22 logger.go:26: POST /createTrack | 201 | ::1 | 1.0605194s
+[INFO]  2025/05/13 18:24:59 logger.go:26: POST /playlists | 201 | ::1 | 124.6108ms
+[INFO]  2025/05/13 18:25:03 logger.go:26: GET /playlists | 200 | ::1 | 104.5714ms
+[INFO]  2025/05/13 18:25:08 logger.go:26: GET /playlists | 200 | ::1 | 13.587ms
+[INFO]  2025/05/13 19:51:00 logger.go:26: GET /playlists | 200 | ::1 | 195.7673ms
+[INFO]  2025/05/13 19:51:03 logger.go:26: GET /playlists | 200 | ::1 | 13.6766ms
+[INFO]  2025/05/13 19:51:30 logger.go:26: POST /createTrack | 201 | ::1 | 1.2116417s
+[INFO]  2025/05/13 19:51:36 logger.go:26: GET /playlists | 200 | ::1 | 60.8128ms
+[INFO]  2025/05/13 19:51:38 logger.go:26: GET /playlists | 200 | ::1 | 7.8119ms

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	grpc2 "github.com/Zhan028/Music_Service/playlistService/internal/delivery/grpc"
+	"github.com/Zhan028/Music_Service/playlistService/internal/redis"
 	mongodb2 "github.com/Zhan028/Music_Service/playlistService/internal/repository/mongodb"
 	"github.com/Zhan028/Music_Service/playlistService/internal/usecase"
 	kafkaconsumer "github.com/Zhan028/Music_Service/playlistService/kafka"
@@ -45,11 +46,14 @@ func main() {
 	}
 	log.Println("Connected to MongoDB successfully")
 
+	// Подключаемся к Redis
+	redisClient := redis.Init()
+
 	// Создаем репозиторий
 	playlistRepo := mongodb2.NewPlaylistRepository(db)
 
 	// Создаем use case
-	playlistUseCase := usecase.NewPlaylistUseCase(playlistRepo)
+	playlistUseCase := usecase.NewPlaylistUseCase(playlistRepo, redisClient)
 
 	kafkaconsumer.StartTrackConsumer(*playlistUseCase)
 

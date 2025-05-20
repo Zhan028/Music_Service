@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"errors"
+	"fmt"
 	domain2 "github.com/Zhan028/Music_Service/playlistService/internal/domain"
 	"time"
 
@@ -39,9 +40,16 @@ func (r *mongoPlaylistRepository) Create(ctx context.Context, playlist *domain2.
 func (r *mongoPlaylistRepository) GetByID(ctx context.Context, id string) (*domain2.Playlist, error) {
 	var playlist domain2.Playlist
 
+	// Сначала пробуем найти по строковому ID (если _id хранится как строка)
+	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&playlist)
+	if err == nil {
+		return playlist.FromMongo(), nil
+	}
+
+	// Если не найдено по строке, пробуем конвертировать в ObjectID
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("invalid playlist ID format")
 	}
 
 	err = r.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&playlist)
@@ -49,7 +57,7 @@ func (r *mongoPlaylistRepository) GetByID(ctx context.Context, id string) (*doma
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, errors.New("playlist not found")
 		}
-		return nil, err
+		return nil, fmt.Errorf("database error: %v", err)
 	}
 
 	return playlist.FromMongo(), nil
@@ -146,20 +154,37 @@ func (r *mongoPlaylistRepository) RemoveTrack(ctx context.Context, playlistID st
 }
 
 func (r *mongoPlaylistRepository) Delete(ctx context.Context, id string, userID string) error {
-	objID, err := primitive.ObjectIDFromHex(id)
+	// Сначала получаем плейлист
+	playlist, err := r.GetByID(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	filter := bson.M{"_id": objID, "user_id": userID}
-
-	result, err := r.collection.DeleteOne(ctx, filter)
-	if err != nil {
-		return err
+	// Проверяем права доступа
+	if playlist.UserID != userID {
+		return errors.New("you don't have permission to delete this playlist")
 	}
 
-	if result.DeletedCount == 0 {
-		return errors.New("playlist not found or you don't have permission to delete it")
+	// Пробуем удалить по строковому ID
+	delResult, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return fmt.Errorf("database error: %v", err)
+	}
+
+	// Если не удалено, пробуем ObjectID
+	if delResult.DeletedCount == 0 {
+		objID, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return errors.New("invalid playlist ID format")
+		}
+
+		delResult, err = r.collection.DeleteOne(ctx, bson.M{"_id": objID})
+		if err != nil {
+			return fmt.Errorf("database error: %v", err)
+		}
+		if delResult.DeletedCount == 0 {
+			return errors.New("playlist not found")
+		}
 	}
 
 	return nil

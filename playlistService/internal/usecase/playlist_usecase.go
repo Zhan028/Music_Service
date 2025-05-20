@@ -63,13 +63,11 @@ func (uc *PlaylistUseCase) AddTrackToPlaylist(ctx context.Context, playlistID st
 		return nil, errors.New("track title and artist cannot be empty")
 	}
 
-	// Проверяем, что плейлист существует
 	playlist, err := uc.repo.GetByID(ctx, playlistID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Проверяем, что трек с таким ID не существует в плейлисте
 	for _, t := range playlist.Tracks {
 		if t.ID == track.ID && track.ID != "" {
 			return nil, errors.New("track already exists in playlist")
@@ -102,6 +100,41 @@ func (uc *PlaylistUseCase) DeletePlaylist(ctx context.Context, id, userID string
 
 	return uc.repo.Delete(ctx, id, userID)
 }
+
+// UpdatePlaylist обновляет информацию о плейлисте
+func (uc *PlaylistUseCase) UpdatePlaylist(ctx context.Context, id, userID, name, description string, isPublic bool) (*domain2.Playlist, error) {
+	if id == "" {
+		return nil, errors.New("playlist ID cannot be empty")
+	}
+
+	if userID == "" {
+		return nil, errors.New("user ID cannot be empty")
+	}
+
+	// Проверяем существование плейлиста и права доступа
+	playlist, err := uc.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if playlist.UserID != userID {
+		return nil, errors.New("you don't have permission to update this playlist")
+	}
+
+	// Создаем обновленную версию плейлиста
+	updatedPlaylist := &domain2.Playlist{
+		ID:          playlist.ID,
+		Name:        name,
+		UserID:      userID,
+		Description: description,
+		Tracks:      playlist.Tracks,
+
+		CreatedAt: playlist.CreatedAt,
+	}
+
+	return uc.repo.Update(ctx, updatedPlaylist)
+}
+
 func (uc *PlaylistUseCase) AddToNewPlaylist(ctx context.Context, message kafka.Message) error {
 	var track domain2.Track
 	if err := json.Unmarshal(message.Value, &track); err != nil {
@@ -116,10 +149,9 @@ func (uc *PlaylistUseCase) AddToNewPlaylist(ctx context.Context, message kafka.M
 	}
 
 	if playlist == nil {
-		// создаём плейлист с треком
 		newPlaylist := &domain2.Playlist{
 			Name:   playlistName,
-			UserID: "system", // или "" если не нужен
+			UserID: "system", // специальный ID для системных плейлистов
 			Tracks: []*domain2.Track{&track},
 		}
 
@@ -127,7 +159,13 @@ func (uc *PlaylistUseCase) AddToNewPlaylist(ctx context.Context, message kafka.M
 		return err
 	}
 
-	// добавляем трек в существующий плейлист
+	// Проверяем, нет ли уже такого трека в плейлисте
+	for _, t := range playlist.Tracks {
+		if t.ID == track.ID && track.ID != "" {
+			return nil // трек уже есть, ничего не делаем
+		}
+	}
+
 	_, err = uc.repo.AddTrack(ctx, playlist.ID, track)
 	return err
 }

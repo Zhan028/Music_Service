@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v6.30.2
-// source: proto/playlist.proto
+// source: playlist.proto
 
 package proto
 
@@ -31,17 +31,11 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PlaylistServiceClient interface {
-	// Создание нового плейлиста
 	CreatePlaylist(ctx context.Context, in *CreatePlaylistRequest, opts ...grpc.CallOption) (*Playlist, error)
-	// Получение плейлиста по ID
 	GetPlaylist(ctx context.Context, in *GetPlaylistRequest, opts ...grpc.CallOption) (*Playlist, error)
-	// Получение всех плейлистов пользователя
 	GetUserPlaylists(ctx context.Context, in *GetUserPlaylistsRequest, opts ...grpc.CallOption) (*PlaylistList, error)
-	// Добавление трека в плейлист
 	AddTrackToPlaylist(ctx context.Context, in *AddTrackRequest, opts ...grpc.CallOption) (*Playlist, error)
-	// Удаление трека из плейлиста
 	RemoveTrackFromPlaylist(ctx context.Context, in *RemoveTrackRequest, opts ...grpc.CallOption) (*Playlist, error)
-	// Удаление плейлиста
 	DeletePlaylist(ctx context.Context, in *DeletePlaylistRequest, opts ...grpc.CallOption) (*DeletePlaylistResponse, error)
 }
 
@@ -111,17 +105,11 @@ func (c *playlistServiceClient) DeletePlaylist(ctx context.Context, in *DeletePl
 // All implementations must embed UnimplementedPlaylistServiceServer
 // for forward compatibility
 type PlaylistServiceServer interface {
-	// Создание нового плейлиста
 	CreatePlaylist(context.Context, *CreatePlaylistRequest) (*Playlist, error)
-	// Получение плейлиста по ID
 	GetPlaylist(context.Context, *GetPlaylistRequest) (*Playlist, error)
-	// Получение всех плейлистов пользователя
 	GetUserPlaylists(context.Context, *GetUserPlaylistsRequest) (*PlaylistList, error)
-	// Добавление трека в плейлист
 	AddTrackToPlaylist(context.Context, *AddTrackRequest) (*Playlist, error)
-	// Удаление трека из плейлиста
 	RemoveTrackFromPlaylist(context.Context, *RemoveTrackRequest) (*Playlist, error)
-	// Удаление плейлиста
 	DeletePlaylist(context.Context, *DeletePlaylistRequest) (*DeletePlaylistResponse, error)
 	mustEmbedUnimplementedPlaylistServiceServer()
 }
@@ -302,5 +290,5 @@ var PlaylistService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/playlist.proto",
+	Metadata: "playlist.proto",
 }

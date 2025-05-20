@@ -5,7 +5,6 @@ import (
 	grpc2 "github.com/Zhan028/Music_Service/playlistService/internal/delivery/grpc"
 	mongodb2 "github.com/Zhan028/Music_Service/playlistService/internal/repository/mongodb"
 	"github.com/Zhan028/Music_Service/playlistService/internal/usecase"
-	kafkaconsumer "github.com/Zhan028/Music_Service/playlistService/kafka"
 	pb "github.com/Zhan028/Music_Service/playlistService/proto"
 
 	"log"
@@ -51,7 +50,7 @@ func main() {
 	// Создаем use case
 	playlistUseCase := usecase.NewPlaylistUseCase(playlistRepo)
 
-	kafkaconsumer.StartTrackConsumer(playlistUseCase)
+	//kafkaconsumer.StartTrackConsumer(*playlistUseCase)
 
 	// Создаем gRPC сервер
 	server := grpc2.NewPlaylistServer(playlistUseCase)

@@ -110,11 +110,30 @@ func (s *PlaylistServer) RemoveTrackFromPlaylist(ctx context.Context, req *proto
 }
 
 func (s *PlaylistServer) DeletePlaylist(ctx context.Context, req *proto.DeletePlaylistRequest) (*proto.DeletePlaylistResponse, error) {
-	err := s.useCase.DeletePlaylist(ctx, req.Id, req.UserId)
+	// Добавляем логирование для отладки
+	log.Printf("Delete request for playlist ID: %s, user ID: %s", req.Id, req.UserId)
+
+	// 1. Проверяем существование плейлиста
+	playlist, err := s.useCase.GetPlaylist(ctx, req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to delete playlist: %v", err)
+		log.Printf("Playlist not found error: %v", err)
+		return nil, status.Errorf(codes.NotFound, "playlist not found")
 	}
 
+	// 2. Проверяем права доступа
+	if playlist.UserID != req.UserId {
+		log.Printf("Permission denied: playlist owned by %s, requested by %s",
+			playlist.UserID, req.UserId)
+		return nil, status.Errorf(codes.PermissionDenied, "you don't own this playlist")
+	}
+
+	// 3. Удаляем плейлист
+	if err := s.useCase.DeletePlaylist(ctx, req.Id, req.UserId); err != nil {
+		log.Printf("Delete error: %v", err)
+		return nil, status.Errorf(codes.Internal, "failed to delete playlist")
+	}
+
+	log.Printf("Playlist %s deleted successfully", req.Id)
 	return &proto.DeletePlaylistResponse{Success: true}, nil
 }
 

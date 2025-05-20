@@ -10,9 +10,10 @@ import (
 func main() {
 	clients := grpc.NewClients()
 	handler := http.NewHandler(clients)
+	jwt := "your-secret-key"
 
 	r := gin.Default()
-	http.RegisterRoutes(r, handler)
+	http.SetupRoutes(r, handler, jwt)
 
 	r.Run(":8080") // API Gateway слушает на порту 8080
 }

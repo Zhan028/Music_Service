@@ -1,6 +1,8 @@
 package domain
 
-import "context"
+import (
+	"context"
+)
 
 // PlaylistRepository описывает методы для работы с хранилищем плейлистов
 type PlaylistRepository interface {
@@ -26,4 +28,5 @@ type PlaylistRepository interface {
 	Delete(ctx context.Context, id string, userID string) error
 
 	GetByName(ctx context.Context, name string) (*Playlist, error)
+	//AddToNewPlaylist(ctx context.Context, message kafka.Message) error
 }

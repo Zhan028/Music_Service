@@ -15,12 +15,14 @@ func main() {
 
 	clients := grpc.NewClients()
 	handler := http.NewHandler(clients)
+	jwt := "your-secret-key"
 
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(middleware.GinLoggerMiddleware())
 
-	http.RegisterRoutes(r, handler)
+	r = gin.Default()
+	http.SetupRoutes(r, handler, jwt)
 
 	logger.InfoLogger.Println("API Gateway started on :8081")
 	r.Run(":8081")

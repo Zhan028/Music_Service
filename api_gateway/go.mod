@@ -1,12 +1,15 @@
 module github.com/Zhan028/Music_Service/api_gateway
 
-go 1.23.0
+go 1.24
+
+toolchain go1.24.3
 
 require (
 	github.com/Zhan028/Music_Service/playlistService v0.0.0-20250507092009-45745d230c51
 	github.com/Zhan028/Music_Service/track-service v0.0.0-20250507092009-45745d230c51
 	github.com/Zhan028/Music_Service/userService v0.0.0-20250507092009-45745d230c51
 	github.com/gin-gonic/gin v1.10.0
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	google.golang.org/grpc v1.72.0
 )
 

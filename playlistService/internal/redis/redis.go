@@ -44,7 +44,6 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-// todo
 func (r *Redis) Get(key string) ([]byte, error) {
 	result, err := r.Client.Get(ctx, key).Bytes()
 	if err != nil {

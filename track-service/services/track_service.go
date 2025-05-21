@@ -21,7 +21,6 @@ func NewTrackGRPCService(repo *repositories.TrackRepo) *TrackGRPCService {
 	return &TrackGRPCService{repo: repo}
 }
 
-// Kafka writer (можно вынести в init или конструктор)
 var kafkaWriter = &kafka.Writer{
 	Addr:     kafka.TCP("localhost:9092"),
 	Balancer: &kafka.LeastBytes{},
@@ -36,12 +35,11 @@ func (s *TrackGRPCService) CreateTrack(ctx context.Context, req *pb.CreateTrackR
 		Duration: req.GetDurationSec(),
 	}
 
-	// CreatedAt внутри репозитория
 	if _, err := s.repo.CreateTrack(ctx, track); err != nil {
 		return nil, err
 	}
 
-	// Отправляем событие в Kafka
+	// Отправляю событие в Kafka
 	localKafka.PublishMessage(ctx, kafkaWriter, "track.created", track.ID.Hex(), track)
 
 	return &pb.CreateTrackResponse{

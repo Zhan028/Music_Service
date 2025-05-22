@@ -65,5 +65,5 @@ A scalable microservices-based **Music Streaming Platform**, developed in Go. Th
 > Each microservice runs independently. Ensure MongoDB, Kafka, and Redis are running.
 
 ```bash
-# Run userService
+# Run api_gateaway
 go run ./cmd/main.go

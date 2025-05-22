@@ -2,16 +2,18 @@ package main
 
 import (
 	"context"
-	grpcHandler "github.com/Zhan028/Music_Service/userService/internal/delivery/grpc"
-	"github.com/Zhan028/Music_Service/userService/internal/repository"
-	"github.com/Zhan028/Music_Service/userService/internal/usecase"
-	pb "github.com/Zhan028/Music_Service/userService/proto"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	grpcHandler "github.com/Zhan028/Music_Service/userService/internal/delivery/grpc"
+	"github.com/Zhan028/Music_Service/userService/internal/infrastructure/email"
+	"github.com/Zhan028/Music_Service/userService/internal/repository"
+	"github.com/Zhan028/Music_Service/userService/internal/usecase"
+	pb "github.com/Zhan028/Music_Service/userService/proto"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,14 +22,20 @@ import (
 )
 
 func main() {
-	// Загрузка конфигурации из переменных окружения
+	// Конфигурация сервиса
 	mongoURI := "mongodb://localhost:27017"
 	dbName := "ap2"
 	grpcPort := "50053"
 	jwtSecret := "your-secret-key"
 	tokenExpStr := "24h"
 
-	// Парсинг длительности токена
+	// Конфигурация SMTP (здесь рекомендуется использовать переменные окружения)
+	smtpHost := "smtp.gmail.com"
+	smtpPort := 587
+	smtpUser := "zhanbatyrmolkryt@gmail.com"
+	smtpPassword := "yesz ypaf uxcd gmdz"
+
+	// Парсинг продолжительности токена
 	tokenExp, err := time.ParseDuration(tokenExpStr)
 	if err != nil {
 		log.Fatalf("Неверная длительность токена: %v", err)
@@ -42,35 +50,33 @@ func main() {
 		log.Fatalf("Ошибка подключения к MongoDB: %v", err)
 	}
 	defer func() {
-		if err = client.Disconnect(context.TODO()); err != nil {
+		if err := client.Disconnect(context.TODO()); err != nil {
 			log.Printf("Не удалось отключиться от MongoDB: %v", err)
 		}
 	}()
 
-	// Пинг базы данных для проверки подключения
-	if err = client.Ping(ctx, nil); err != nil {
+	// Проверка подключения к MongoDB
+	if err := client.Ping(ctx, nil); err != nil {
 		log.Fatalf("Не удалось отправить пинг к MongoDB: %v", err)
 	}
 	log.Println("Успешно подключено к MongoDB")
 
-	// Инициализация базы данных
+	// Инициализация репозитория и базы данных
 	db := client.Database(dbName)
-
-	// Инициализация репозитория
 	repo := repository.NewMongoUserRepository(db)
 
-	// Инициализация use case
-	uc := usecase.NewUserUseCase(repo)
+	// Инициализация email-отправщика
+	emailSender := email.NewGomailSender(smtpUser, smtpHost, smtpUser, smtpPassword, smtpPort)
 
-	// Инициализация gRPC обработчика (добавлен параметр JWT, если ваш обработчик поддерживает это)
-	// Если ваш обработчик не принимает эти параметры, измените эту строку соответственно
+	// Инициализация бизнес-логики (use case)
+	uc := usecase.NewUserUseCase(repo, emailSender)
+
+	// Инициализация gRPC обработчика
 	handler := grpcHandler.NewUserServiceHandler(uc, jwtSecret, tokenExp)
 
-	// Создание gRPC сервера
+	// Настройка gRPC сервера
 	grpcServer := grpc.NewServer()
 	pb.RegisterUserServiceServer(grpcServer, handler)
-
-	// Включение reflection для инструментов типа grpcurl
 	reflection.Register(grpcServer)
 
 	// Запуск gRPC сервера
@@ -80,7 +86,7 @@ func main() {
 	}
 	log.Printf("Запуск gRPC сервера на порту %s", grpcPort)
 
-	// Обработка корректного завершения
+	// Обработка сигнала завершения
 	go func() {
 		signals := make(chan os.Signal, 1)
 		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
@@ -89,8 +95,8 @@ func main() {
 		grpcServer.GracefulStop()
 	}()
 
-	// Начало обслуживания
+	// Запуск сервера
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("Не удалось обслужить: %v", err)
+		log.Fatalf("Ошибка запуска gRPC сервера: %v", err)
 	}
 }

@@ -35,3 +35,7 @@
 [INFO]  2025/05/21 17:30:47 logger.go:23: POST /createTrack | 201 | ::1 | 1.3023896s
 [INFO]  2025/05/21 17:30:54 logger.go:23: GET /playlists | 200 | ::1 | 119.3595ms
 [INFO]  2025/05/21 17:31:54 logger.go:23: GET /playlists | 200 | ::1 | 47.7842ms
+[INFO]  2025/05/21 21:31:27 main.go:27: API Gateway started on :8081
+[INFO]  2025/05/21 21:58:37 main.go:27: API Gateway started on :8081
+[INFO]  2025/05/21 22:05:13 main.go:27: API Gateway started on :8081
+[INFO]  2025/05/21 22:32:42 main.go:27: API Gateway started on :8081

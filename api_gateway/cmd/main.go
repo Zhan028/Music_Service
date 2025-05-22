@@ -26,4 +26,5 @@ func main() {
 
 	logger.InfoLogger.Println("API Gateway started on :8081")
 	r.Run(":8081")
+
 }

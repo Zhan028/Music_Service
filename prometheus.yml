@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'api_gateway'
+    static_configs:
+      - targets: ['api_gateway:8081']   # порт, где твой сервис отдаёт метрики /metrics
+
+  - job_name: 'playlistService'
+    static_configs:
+      - targets: ['playlistService:50051']
+
+  - job_name: 'track-service'
+    static_configs:
+      - targets: ['track-service:50052']
+
+  - job_name: 'userService'
+    static_configs:
+      - targets: ['userService:50053']
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

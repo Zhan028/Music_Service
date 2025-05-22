@@ -1,8 +1,6 @@
 module github.com/Zhan028/Music_Service/api_gateway
 
-go 1.24
-
-toolchain go1.24.3
+go 1.23.0
 
 require (
 	github.com/Zhan028/Music_Service/playlistService v0.0.0-20250507092009-45745d230c51

@@ -2,7 +2,6 @@ module github.com/Zhan028/Music_Service/track-service
 
 go 1.23.0
 
-toolchain go1.24.3
 
 require (
 	github.com/segmentio/kafka-go v0.4.47
